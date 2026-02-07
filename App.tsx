@@ -18,7 +18,7 @@ const OurSoundtrack = React.lazy(() => import('./components/OurSoundtrack').then
 
 // Loading Component
 const SectionLoader = () => (
-  <div className="w-full h-40 flex items-center justify-center text-love-accent/50 dark:text-love-dark-accent/50">
+  <div className="w-full min-h-[50vh] flex items-center justify-center text-love-accent/50 dark:text-love-dark-accent/50">
     <div className="animate-pulse flex flex-col items-center gap-2">
       <Heart className="w-6 h-6 animate-bounce" />
       <span className="text-xs tracking-widest uppercase">Loading Memory...</span>
@@ -154,17 +154,18 @@ const THEMES: Record<ThemeType, any> = {
 
 const BackgroundPattern = () => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-    {/* Gradient Base - Animated */}
+    {/* Gradient Base - Optimized for GPU (avoid backgroundPosition animation) */}
     <motion.div
       animate={{
-        backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+        x: ['-25%', '0%', '-25%'],
+        y: ['-25%', '0%', '-25%'],
       }}
       transition={{
-        duration: 30, // Slowed down significantly
+        duration: 30,
         ease: "linear",
         repeat: Infinity
       }}
-      className="absolute inset-0 bg-gradient-to-br from-love-bg via-love-pink/20 to-love-bg dark:from-love-dark-bg dark:via-love-dark-accent/5 dark:to-love-dark-bg bg-[length:200%_200%]"
+      className="absolute inset-[-50%] bg-gradient-to-br from-love-bg via-love-pink/20 to-love-bg dark:from-love-dark-bg dark:via-love-dark-accent/5 dark:to-love-dark-bg w-[200%] h-[200%]"
     />
 
     {/* Noise Texture - Very Subtle */}
@@ -230,18 +231,30 @@ const App: React.FC = () => {
 
   // Smooth scroll and lock body scroll during intro
   useEffect(() => {
+    // Force smooth scrolling globally
     document.documentElement.style.scrollBehavior = 'smooth';
 
     if (!isIntroComplete) {
+      // Lock scrolling on BOTH html and body for better mobile support
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.height = '100vh'; // Prevent rubber-banding
+      document.documentElement.style.height = '100vh'; // Prevent rubber-banding
       window.scrollTo(0, 0);
     } else {
-      document.body.style.overflow = 'unset';
+      // Restore scrolling
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.height = '';
+      document.documentElement.style.height = '';
     }
 
     return () => {
-      document.documentElement.style.scrollBehavior = 'auto';
-      document.body.style.overflow = 'unset';
+      document.documentElement.style.scrollBehavior = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.height = '';
+      document.documentElement.style.height = '';
     };
   }, [isIntroComplete]);
 
