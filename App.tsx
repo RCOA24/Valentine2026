@@ -2,17 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { Heart, Moon, Sun, Palette, Check } from 'lucide-react';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
 import { Section } from './components/Section';
-import { FinalLetter } from './components/FinalLetter';
 import { IntroGate } from './components/IntroGate';
-import { DatePlanner } from './components/DatePlanner';
-import { BucketList } from './components/BucketList';
-import { LoveNotes } from './components/LoveNotes';
-import { ComfortCorner } from './components/ComfortCorner';
-import { BloomGarden } from './components/BloomGarden';
-import { MuseumGallery } from './components/MuseumGallery';
-import { OurSoundtrack } from './components/OurSoundtrack';
 import { InAppBrowserGuard } from './components/InAppBrowserGuard';
 import { STORY_DATA } from './data';
+
+// Lazy load heavy components
+const FinalLetter = React.lazy(() => import('./components/FinalLetter').then(module => ({ default: module.FinalLetter })));
+const DatePlanner = React.lazy(() => import('./components/DatePlanner').then(module => ({ default: module.DatePlanner })));
+const BucketList = React.lazy(() => import('./components/BucketList').then(module => ({ default: module.BucketList })));
+const LoveNotes = React.lazy(() => import('./components/LoveNotes').then(module => ({ default: module.LoveNotes })));
+const ComfortCorner = React.lazy(() => import('./components/ComfortCorner').then(module => ({ default: module.ComfortCorner })));
+const BloomGarden = React.lazy(() => import('./components/BloomGarden').then(module => ({ default: module.BloomGarden })));
+const MuseumGallery = React.lazy(() => import('./components/MuseumGallery').then(module => ({ default: module.MuseumGallery })));
+const OurSoundtrack = React.lazy(() => import('./components/OurSoundtrack').then(module => ({ default: module.OurSoundtrack })));
+
+// Loading Component
+const SectionLoader = () => (
+  <div className="w-full h-40 flex items-center justify-center text-love-accent/50 dark:text-love-dark-accent/50">
+    <div className="animate-pulse flex flex-col items-center gap-2">
+      <Heart className="w-6 h-6 animate-bounce" />
+      <span className="text-xs tracking-widest uppercase">Loading Memory...</span>
+    </div>
+  </div>
+);
 
 // --- THEME DEFINITIONS ---
 type ThemeType = 'blush' | 'lavender' | 'ocean' | 'midnight' | 'sunset' | 'forest' | 'mocha' | 'royal';
@@ -425,43 +437,59 @@ const App: React.FC = () => {
       {/* Museum of Our Love */}
       <Section className="min-h-screen flex flex-col justify-center items-center px-4 py-20 z-10">
         <div className="bg-love-card/80 dark:bg-love-dark-card/60 backdrop-blur-xl w-full py-10 rounded-3xl border border-love-accent/10 shadow-xl">
-          <MuseumGallery />
+          <React.Suspense fallback={<SectionLoader />}>
+            <MuseumGallery />
+          </React.Suspense>
         </div>
       </Section>
 
       {/* Our Soundtrack */}
       <Section className="min-h-screen flex flex-col justify-center items-center px-4 py-20 z-10">
-        <OurSoundtrack isIntroComplete={isIntroComplete} />
+        <React.Suspense fallback={<SectionLoader />}>
+          <OurSoundtrack isIntroComplete={isIntroComplete} />
+        </React.Suspense>
       </Section>
 
       {/* Comfort Corner */}
       <Section className="min-h-screen flex flex-col justify-center items-center px-4 py-20 z-10">
-        <ComfortCorner />
+        <React.Suspense fallback={<SectionLoader />}>
+          <ComfortCorner />
+        </React.Suspense>
       </Section>
 
       {/* Date Planner Section */}
       <Section className="min-h-screen flex flex-col justify-center items-center px-4 py-20 z-10">
-        <DatePlanner />
+        <React.Suspense fallback={<SectionLoader />}>
+          <DatePlanner />
+        </React.Suspense>
       </Section>
 
       {/* Bloom Garden */}
       <Section className="min-h-screen flex flex-col justify-center items-center px-4 py-20 z-10">
-        <BloomGarden />
+        <React.Suspense fallback={<SectionLoader />}>
+          <BloomGarden />
+        </React.Suspense>
       </Section>
 
       {/* Love Note Jar */}
       <Section className="min-h-screen flex flex-col justify-center items-center px-4 py-20 z-10">
-        <LoveNotes />
+        <React.Suspense fallback={<SectionLoader />}>
+          <LoveNotes />
+        </React.Suspense>
       </Section>
 
       {/* Future Bucket List Section */}
       <Section className="min-h-screen flex flex-col justify-center items-center px-4 py-20 z-10">
-        <BucketList />
+        <React.Suspense fallback={<SectionLoader />}>
+          <BucketList />
+        </React.Suspense>
       </Section>
 
       {/* Final Letter */}
       <Section className="min-h-screen flex justify-center items-center px-4 py-20 z-10">
-        <FinalLetter />
+        <React.Suspense fallback={<SectionLoader />}>
+          <FinalLetter />
+        </React.Suspense>
       </Section>
 
       <footer className="py-8 text-center text-love-text/30 dark:text-love-dark-text/30 text-xs tracking-widest uppercase relative z-10 font-medium">

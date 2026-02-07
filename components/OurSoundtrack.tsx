@@ -231,6 +231,7 @@ export const OurSoundtrack: React.FC<OurSoundtrackProps> = ({ isIntroComplete = 
           {/* Hidden Audio Element */}
           <audio
             ref={audioRef}
+            preload="none"
             src={currentSong.audioUrl}
             onEnded={() => {
               if (currentIndex < SONGS.length - 1) {

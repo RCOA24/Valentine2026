@@ -307,7 +307,7 @@ const VideoPlayer: React.FC<{ url: string; thumbnail?: string }> = ({ url, thumb
         className="w-full h-full object-cover"
         playsInline
         muted
-        preload="metadata"
+        preload="none"
       />
       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/50 flex items-center justify-center shadow-lg">
