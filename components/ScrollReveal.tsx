@@ -8,19 +8,19 @@ interface ScrollRevealProps {
   delay?: number;
 }
 
-export const ScrollReveal: React.FC<ScrollRevealProps> = ({ 
-  children, 
+export const ScrollReveal: React.FC<ScrollRevealProps> = ({
+  children,
   width = "fit-content",
   className = "",
-  delay = 0 
+  delay = 0
 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-10% 0px -10% 0px" });
 
   const variants: Variants = {
     hidden: { opacity: 0, y: 40 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: 1.2,
@@ -35,6 +35,7 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
       <motion.div
         variants={variants}
         initial="hidden"
+        className="will-change-[opacity,transform]"
         animate={isInView ? "visible" : "hidden"}
       >
         {children}

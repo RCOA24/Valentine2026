@@ -16,9 +16,9 @@ const BloomGarden = React.lazy(() => import('./components/BloomGarden').then(mod
 const MuseumGallery = React.lazy(() => import('./components/MuseumGallery').then(module => ({ default: module.MuseumGallery })));
 const OurSoundtrack = React.lazy(() => import('./components/OurSoundtrack').then(module => ({ default: module.OurSoundtrack })));
 
-// Loading Component
+// Loading Component - Height matches dynamic viewport height to prevent layout shifts on mobile
 const SectionLoader = () => (
-  <div className="w-full min-h-screen flex items-center justify-center text-love-accent/50 dark:text-love-dark-accent/50">
+  <div className="w-full min-h-[100dvh] flex items-center justify-center text-love-accent/50 dark:text-love-dark-accent/50">
     <div className="animate-pulse flex flex-col items-center gap-2">
       <Heart className="w-6 h-6 animate-bounce" />
       <span className="text-xs tracking-widest uppercase">Loading Memory...</span>
@@ -153,9 +153,11 @@ const THEMES: Record<ThemeType, any> = {
 };
 
 const BackgroundPattern = () => (
-  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-    {/* Gradient Base - Optimized for GPU (avoid backgroundPosition animation) */}
+  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-love-bg dark:bg-love-dark-bg">
+    {/* Gradient Base - Optimized for GPU */}
+    {/* We use will-change-transform to inform the browser to promote this to a layer */}
     <motion.div
+      initial={{ x: '-25%', y: '-25%' }}
       animate={{
         x: ['-25%', '0%', '-25%'],
         y: ['-25%', '0%', '-25%'],
@@ -165,35 +167,36 @@ const BackgroundPattern = () => (
         ease: "linear",
         repeat: Infinity
       }}
-      className="absolute inset-[-50%] bg-gradient-to-br from-love-bg via-love-pink/20 to-love-bg dark:from-love-dark-bg dark:via-love-dark-accent/5 dark:to-love-dark-bg w-[200%] h-[200%]"
+      style={{ willChange: 'transform' }}
+      className="absolute inset-[-50%] w-[200%] h-[200%] bg-gradient-to-br from-love-bg via-love-pink/20 to-love-bg dark:from-love-dark-bg dark:via-love-dark-accent/10 dark:to-love-dark-bg"
     />
 
-    {/* Noise Texture - Very Subtle */}
-    <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]"
-      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
-    />
-
-    {/* Floating Hearts Pattern - Subtle and Blurred */}
-    <motion.div
-      animate={{
-        y: [0, -15, 0],
-        x: [0, 5, 0]
-      }}
-      transition={{
-        duration: 18, // Much slower animation
-        ease: "easeInOut",
-        repeat: Infinity
-      }}
-      className="absolute inset-0 opacity-[0.035] dark:opacity-[0.05] blur-[0.5px]" // Reduced opacity and added blur
+    {/* Optimized Orbs - Using Radial Gradients instead of expensive CSS Blur */}
+    {/* Top-Left Orb */}
+    <div
+      className="absolute top-0 left-0 w-[80vw] h-[80vw] opacity-40 dark:opacity-20 pointer-events-none"
       style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 45 C30 45 10 30 10 15 C10 5 20 5 30 15 C40 5 50 5 50 15 C50 30 30 45 30 45 Z' fill='currentColor'/%3E%3C/svg%3E")`,
-        backgroundSize: '100px 100px'
+        background: 'radial-gradient(circle at 20% 20%, var(--love-accent), transparent 70%)',
+        transform: 'translate(-30%, -30%)',
       }}
     />
 
-    {/* Large Blur Orbs for Depth - Subtle */}
-    <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-love-accent/10 dark:bg-love-dark-accent/5 blur-[120px]" />
-    <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-love-pink/20 dark:bg-love-dark-accent/5 blur-[120px]" />
+    {/* Bottom-Right Orb */}
+    <div
+      className="absolute bottom-0 right-0 w-[80vw] h-[80vw] opacity-30 dark:opacity-20 pointer-events-none"
+      style={{
+        background: 'radial-gradient(circle at 80% 80%, var(--love-pink), transparent 70%)',
+        transform: 'translate(30%, 30%)',
+      }}
+    />
+
+    {/* Grain Texture - Replaced SVG filter with simple CSS pattern for performance */}
+    <div className="absolute inset-0 opacity-[0.4] dark:opacity-[0.3]"
+      style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`,
+        backgroundSize: '150px 150px' // Tiling reduces GPU load compared to full-screen generation
+      }}
+    />
   </div>
 );
 
