@@ -18,7 +18,7 @@ const OurSoundtrack = React.lazy(() => import('./components/OurSoundtrack').then
 
 // Loading Component
 const SectionLoader = () => (
-  <div className="w-full min-h-[50vh] flex items-center justify-center text-love-accent/50 dark:text-love-dark-accent/50">
+  <div className="w-full min-h-screen flex items-center justify-center text-love-accent/50 dark:text-love-dark-accent/50">
     <div className="animate-pulse flex flex-col items-center gap-2">
       <Heart className="w-6 h-6 animate-bounce" />
       <span className="text-xs tracking-widest uppercase">Loading Memory...</span>
@@ -229,11 +229,8 @@ const App: React.FC = () => {
     });
   }, [currentTheme]);
 
-  // Smooth scroll and lock body scroll during intro
+  // Lock body scroll during intro
   useEffect(() => {
-    // Force smooth scrolling globally
-    document.documentElement.style.scrollBehavior = 'smooth';
-
     if (!isIntroComplete) {
       // Lock scrolling on BOTH html and body for better mobile support
       document.body.style.overflow = 'hidden';
@@ -250,7 +247,6 @@ const App: React.FC = () => {
     }
 
     return () => {
-      document.documentElement.style.scrollBehavior = '';
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
       document.body.style.height = '';
