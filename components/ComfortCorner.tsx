@@ -18,7 +18,7 @@ const MOODS: Mood[] = [
     icon: <Battery className="w-5 h-5 rotate-90" />,
     response: "Baby, I know you've been running on fumes lately. I see how hard you're working, and I'm so incredibly proud of you—but please remember that you don't have to carry the world on your shoulders. It's okay to just stop. Close your eyes, take a deep breath, and let go for a moment. I've got you.",
     color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300",
-    audioSrc: "/comfort-audio/tired.mp3"
+    audioSrc: "/comfort-audio/tired.aac"
   },
   {
     id: 'anxious',
@@ -26,7 +26,7 @@ const MOODS: Mood[] = [
     icon: <Cloud className="w-5 h-5" />,
     response: "Hey... look at me. It's just a thought, it's not the truth. You are safe, you are so capable, and I am right here holding your hand through this. We'll take it one tiny step at a time. Just breathe with me. In... and out. You're going to be okay.",
     color: "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-300",
-    audioSrc: "/comfort-audio/anxious.mp3"
+    audioSrc: "/comfort-audio/anxious.aac"
   },
   {
     id: 'sad',
@@ -34,7 +34,7 @@ const MOODS: Mood[] = [
     icon: <Frown className="w-5 h-5" />,
     response: "I'm so sorry you're feeling down, my love. I wish I could just wrap my arms around you and take it all away. It's okay to feel this way—let it out. You don't have to be strong all the time. I'm here, I'm listening, and I love you through every single emotion.",
     color: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-300",
-    audioSrc: "/comfort-audio/sad.mp3"
+    audioSrc: "/comfort-audio/sad.aac"
   },
   {
     id: 'miss',
@@ -42,7 +42,7 @@ const MOODS: Mood[] = [
     icon: <Heart className="w-5 h-5" />,
     response: "I know... the distance feels extra heavy today, doesn't it? I miss you more than words can even describe. But remember, every second that passes is one second closer to us being together again. You are always in my heart, no matter how many miles are between us.",
     color: "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-300",
-    audioSrc: "/comfort-audio/miss-you.mp3"
+    audioSrc: "/comfort-audio/miss-you.aac"
   },
   {
     id: 'happy',
@@ -50,7 +50,7 @@ const MOODS: Mood[] = [
     icon: <Sun className="w-5 h-5" />,
     response: "Oh, seeing you happy makes my entire world light up! seriously, your joy is infectious. Hold onto this feeling, soak it up. You deserve every bit of this sunshine and so much more. I love seeing you glow like this!",
     color: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-300",
-    audioSrc: "/comfort-audio/happy.mp3"
+    audioSrc: "/comfort-audio/happy.aac"
   },
   {
     id: 'overwhelmed',
@@ -58,7 +58,7 @@ const MOODS: Mood[] = [
     icon: <Shrink className="w-5 h-5" />,
     response: "Shhh, it's okay. The world is being a lot right now. Let's pause everything. You don't need to figure it all out today. Just focus on the very next thing—even if that's just drinking a glass of water. I believe in you, but for now, just rest.",
     color: "bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-300",
-    audioSrc: "/comfort-audio/overwhelmed.mp3"
+    audioSrc: "/comfort-audio/overwhelmed.aac"
   }
 ];
 
@@ -167,18 +167,49 @@ export const ComfortCorner: React.FC = () => {
 const VoiceMessagePlayer: React.FC<{ src: string; label: string }> = ({ src, label }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
+
+    // Initialize AudioContext and Gain Node for Amplification
+    if (!audioContextRef.current) {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioContextClass();
+      audioContextRef.current = ctx;
+
+      // Create generic gain node
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = 2.5; // Amplify volume to 250%
+
+      // Connect: Source -> Gain -> Destination
+      if (!sourceRef.current) {
+        try {
+          const source = ctx.createMediaElementSource(audioRef.current);
+          sourceRef.current = source;
+          source.connect(gainNode);
+          gainNode.connect(ctx.destination);
+        } catch (err) {
+          console.error("Audio Context setup failed", err);
+        }
+      }
+    }
+
+    // Resume context if browser suspended it (common on Chrome autplay policies)
+    if (audioContextRef.current?.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+
     if (isPlaying) {
       audioRef.current.pause();
     } else {
       audioRef.current.play().catch(e => {
         console.error("Audio play failed:", e);
-        // Optional: Show error toast here
       });
     }
   };
+
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -209,7 +240,12 @@ const VoiceMessagePlayer: React.FC<{ src: string; label: string }> = ({ src, lab
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      <audio ref={audioRef} src={src} preload="metadata" />
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="auto"
+        crossOrigin="anonymous" // Important for AudioContext
+      />
 
       <div className="bg-gray-50 dark:bg-black/20 rounded-2xl p-2 pr-5 flex items-center gap-4 border border-gray-100 dark:border-white/5 transition-all hover:border-love-accent/20 cursor-default group">
         <button
