@@ -11,6 +11,7 @@ import { ComfortCorner } from './components/ComfortCorner';
 import { BloomGarden } from './components/BloomGarden';
 import { MuseumGallery } from './components/MuseumGallery';
 import { OurSoundtrack } from './components/OurSoundtrack';
+import { InAppBrowserGuard } from './components/InAppBrowserGuard';
 import { STORY_DATA } from './data';
 
 // --- THEME DEFINITIONS ---
@@ -466,6 +467,9 @@ const App: React.FC = () => {
       <footer className="py-8 text-center text-love-text/30 dark:text-love-dark-text/30 text-xs tracking-widest uppercase relative z-10 font-medium">
         Made with love, for you.
       </footer>
+
+      {/* In-App Browser Detection */}
+      <InAppBrowserGuard />
     </div>
   );
 };
