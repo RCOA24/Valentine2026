@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X } from 'lucide-react';
+import { OptimizedImage } from './OptimizedImage';
 
 // Types for our museum items
 type MediaType = 'image' | 'video';
@@ -100,7 +101,7 @@ export const MuseumGallery: React.FC = () => {
         <div className="w-16 h-[1px] bg-love-accent/30 dark:bg-love-dark-accent/30 mx-auto mt-6"></div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
         {MUSEUM_ITEMS.map((item, index) => (
           <MuseumFrame
             key={item.id}
@@ -229,6 +230,11 @@ const MuseumFrame: React.FC<{
         ease: "easeOut",
         delay: (index % 3) * 0.15
       }}
+      style={{ 
+        transform: 'translate3d(0,0,0)', // Force GPU acceleration
+        willChange: 'opacity',
+        contentVisibility: 'auto' // Browser hint for off-screen rendering optimization
+      }}
       className="flex flex-col items-center"
     >
       {/* 
@@ -277,11 +283,12 @@ const MuseumFrame: React.FC<{
               {item.type === 'video' ? (
                 <VideoPlayer url={item.url} thumbnail={item.thumbnail} />
               ) : (
-                <img
+                <OptimizedImage
                   src={item.url}
                   alt={item.title}
                   className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                  loading="lazy"
+                  priority={index === 0} // First image has priority
+                  style={{ transform: 'translate3d(0,0,0)' }}
                 />
               )}
 
@@ -318,15 +325,38 @@ const MuseumFrame: React.FC<{
 
 // Grid video: thumbnail + play icon; click is handled by parent (opens lightbox)
 const VideoPlayer: React.FC<{ url: string; thumbnail?: string }> = ({ url, thumbnail }) => {
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '100px' } // Start loading 100px before viewport
+    );
+
+    if (videoRef.current) {
+      observer.observe(videoRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="absolute inset-0 w-full h-full pointer-events-none">
+    <div className="absolute inset-0 w-full h-full pointer-events-none" style={{ transform: 'translate3d(0,0,0)' }}>
       <video
-        src={url}
+        ref={videoRef}
+        src={shouldLoad ? url : undefined}
         poster={thumbnail}
         className="absolute inset-0 w-full h-full object-cover"
         playsInline
         muted
-        preload="metadata"
+        preload={shouldLoad ? 'metadata' : 'none'}
+        style={{ transform: 'translate3d(0,0,0)' }}
       />
       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/50 flex items-center justify-center shadow-lg">
