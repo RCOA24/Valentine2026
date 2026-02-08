@@ -132,9 +132,12 @@ Love always,
 Sherry
     `;
 
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(ticketBody)}`;
+    // Use mailto: for universal support (opens Gmail app or default mail app on mobile)
+    const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(ticketBody)}`;
 
-    window.open(gmailUrl, '_blank');
+    // Use location.href triggers the native app handler better than window.open on mobile
+    window.location.href = mailtoUrl;
+
     setShowToast(true);
   };
 
