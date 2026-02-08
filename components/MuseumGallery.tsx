@@ -206,17 +206,29 @@ const Lightbox: React.FC<{ item: MuseumItem | null; onClose: () => void }> = ({ 
   );
 };
 
+// -----------------------------------------------------------------------------
+// Frame Component 
+// -----------------------------------------------------------------------------
+import { useInView } from 'framer-motion';
+
 const MuseumFrame: React.FC<{
   item: MuseumItem;
   index: number;
   onOpenFullView: () => void;
 }> = ({ item, index, onOpenFullView }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ delay: (index % 3) * 0.1, duration: 0.8, ease: "easeOut" }}
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{
+        duration: 0.8,
+        ease: "easeOut",
+        delay: (index % 3) * 0.1 // Stagger effect
+      }}
       className="flex flex-col items-center"
     >
       {/* 
