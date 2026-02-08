@@ -447,7 +447,7 @@ const App: React.FC = () => {
       ))}
 
       {/* Museum of Our Love — uses raw section to avoid double scroll-reveal opacity gate on mobile */}
-      <section className="w-full relative min-h-screen flex flex-col justify-center items-center px-4 py-20 z-10">
+      <section className="w-full relative flex flex-col items-center px-4 py-20 z-10">
         <div className="bg-love-card/80 dark:bg-love-dark-card/60 backdrop-blur-xl w-full py-10 rounded-3xl border border-love-accent/10 shadow-xl">
           <React.Suspense fallback={<SectionLoader />}>
             <MuseumGallery />

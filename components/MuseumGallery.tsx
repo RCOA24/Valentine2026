@@ -217,27 +217,17 @@ const MuseumFrame: React.FC<{
   onOpenFullView: () => void;
 }> = ({ item, index, onOpenFullView }) => {
   const ref = useRef<HTMLDivElement>(null);
-  // Simplest possible config: trigger when ANY pixel is visible, no margin tricks
   const isInView = useInView(ref, { once: true });
-  const [forceVisible, setForceVisible] = useState(false);
-
-  // Fallback: force visible after timeout in case IntersectionObserver fails on mobile
-  useEffect(() => {
-    const timer = setTimeout(() => setForceVisible(true), 1500 + index * 200);
-    return () => clearTimeout(timer);
-  }, [index]);
-
-  const isVisible = isInView || forceVisible;
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      initial={{ opacity: 0 }}
+      animate={isInView ? { opacity: 1 } : { opacity: 0 }}
       transition={{
-        duration: 0.7,
+        duration: 0.8,
         ease: "easeOut",
-        delay: isInView && !forceVisible ? (index % 3) * 0.12 : 0
+        delay: (index % 3) * 0.15
       }}
       className="flex flex-col items-center"
     >
