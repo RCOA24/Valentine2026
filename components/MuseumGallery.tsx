@@ -217,11 +217,16 @@ const MuseumFrame: React.FC<{
   onOpenFullView: () => void;
 }> = ({ item, index, onOpenFullView }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.2 });
+  // Changed to a positive margin to trigger the animation BEFORE the element enters the viewport.
+  // This ensures the content is visible by the time the user scrolls to it on mobile.
+  // '10%': expands the viewport check by 10% on all sides.
+  const isInView = useInView(ref, { once: true, margin: "10%" });
 
   return (
     <motion.div
       ref={ref}
+      // Use will-change to hint browser about opacity changes for better performance
+      style={{ willChange: 'opacity, transform' }}
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
       transition={{
