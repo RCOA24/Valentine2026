@@ -240,8 +240,9 @@ const MuseumFrame: React.FC<{
         style={{
           // Realistic Metallic Gold Gradient
           background: 'linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)',
-          padding: '24px', // Frame Thickness
+          padding: '16px', // Frame Thickness - reduced for mobile
           borderRadius: '4px',
+          minHeight: '400px', // Prevent collapse on mobile
           boxShadow: `
             0px 10px 20px rgba(0,0,0,0.4), 
             inset 0px 0px 0px 2px rgba(139, 69, 19, 0.5), /* Inner dark line */
@@ -260,12 +261,16 @@ const MuseumFrame: React.FC<{
         />
 
         {/* Inner Molding (The dip before the picture) */}
-        <div className="bg-[#2a2a2a] p-[2px] shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] h-full w-full">
+        <div className="bg-[#2a2a2a] p-[2px] shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] h-full w-full min-h-[350px]">
           {/* The Artwork/Video Container — click to open full view */}
           <button
             type="button"
             onClick={onOpenFullView}
-            className="relative aspect-[3/4] w-full bg-black shadow-inner overflow-hidden cursor-pointer block text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-love-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a2a2a]"
+            className="relative w-full bg-black shadow-inner overflow-hidden cursor-pointer block text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-love-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a2a2a]"
+            style={{
+              aspectRatio: '3/4',
+              minHeight: '350px'
+            }}
             aria-label={`View full size: ${item.title}`}
           >
             {item.type === 'video' ? (
@@ -275,6 +280,7 @@ const MuseumFrame: React.FC<{
                 src={item.url}
                 alt={item.title}
                 className="w-full h-full object-cover pointer-events-none"
+                style={{ minHeight: '350px', display: 'block' }}
                 loading="lazy"
               />
             )}
@@ -312,7 +318,7 @@ const MuseumFrame: React.FC<{
 // Grid video: thumbnail + play icon; click is handled by parent (opens lightbox)
 const VideoPlayer: React.FC<{ url: string; thumbnail?: string }> = ({ url, thumbnail }) => {
   return (
-    <div className="w-full h-full relative pointer-events-none">
+    <div className="w-full h-full relative pointer-events-none" style={{ minHeight: '350px' }}>
       <video
         src={url}
         poster={thumbnail}
@@ -320,6 +326,7 @@ const VideoPlayer: React.FC<{ url: string; thumbnail?: string }> = ({ url, thumb
         playsInline
         muted
         preload="none"
+        style={{ minHeight: '350px' }}
       />
       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/50 flex items-center justify-center shadow-lg">
