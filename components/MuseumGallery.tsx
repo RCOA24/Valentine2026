@@ -216,23 +216,28 @@ const MuseumFrame: React.FC<{
   index: number;
   onOpenFullView: () => void;
 }> = ({ item, index, onOpenFullView }) => {
-  const ref = useRef(null);
-  // Changed to a positive margin to trigger the animation BEFORE the element enters the viewport.
-  // This ensures the content is visible by the time the user scrolls to it on mobile.
-  // '10%': expands the viewport check by 10% on all sides.
-  const isInView = useInView(ref, { once: true, margin: "10%" });
+  const ref = useRef<HTMLDivElement>(null);
+  // Simplest possible config: trigger when ANY pixel is visible, no margin tricks
+  const isInView = useInView(ref, { once: true });
+  const [forceVisible, setForceVisible] = useState(false);
+
+  // Fallback: force visible after timeout in case IntersectionObserver fails on mobile
+  useEffect(() => {
+    const timer = setTimeout(() => setForceVisible(true), 1500 + index * 200);
+    return () => clearTimeout(timer);
+  }, [index]);
+
+  const isVisible = isInView || forceVisible;
 
   return (
     <motion.div
       ref={ref}
-      // Use will-change to hint browser about opacity changes for better performance
-      style={{ willChange: 'opacity, transform' }}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
       transition={{
-        duration: 0.8,
+        duration: 0.7,
         ease: "easeOut",
-        delay: (index % 3) * 0.1 // Stagger effect
+        delay: isInView && !forceVisible ? (index % 3) * 0.12 : 0
       }}
       className="flex flex-col items-center"
     >
@@ -245,9 +250,8 @@ const MuseumFrame: React.FC<{
         style={{
           // Realistic Metallic Gold Gradient
           background: 'linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)',
-          padding: '16px', // Frame Thickness - reduced for mobile
+          padding: '16px',
           borderRadius: '4px',
-          minHeight: '400px', // Prevent collapse on mobile
           boxShadow: `
             0px 10px 20px rgba(0,0,0,0.4), 
             inset 0px 0px 0px 2px rgba(139, 69, 19, 0.5), /* Inner dark line */
@@ -266,33 +270,35 @@ const MuseumFrame: React.FC<{
         />
 
         {/* Inner Molding (The dip before the picture) */}
-        <div className="bg-[#2a2a2a] p-[2px] shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] h-full w-full min-h-[350px]">
+        <div className="bg-[#2a2a2a] p-[2px] shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] h-full w-full">
           {/* The Artwork/Video Container — click to open full view */}
-          <button
-            type="button"
-            onClick={onOpenFullView}
-            className="relative w-full bg-black shadow-inner overflow-hidden cursor-pointer block text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-love-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a2a2a]"
-            style={{
-              aspectRatio: '3/4',
-              minHeight: '350px'
-            }}
-            aria-label={`View full size: ${item.title}`}
-          >
-            {item.type === 'video' ? (
-              <VideoPlayer url={item.url} thumbnail={item.thumbnail} />
-            ) : (
-              <img
-                src={item.url}
-                alt={item.title}
-                className="w-full h-full object-cover pointer-events-none"
-                style={{ minHeight: '350px', display: 'block' }}
-                loading="lazy"
-              />
-            )}
+          {/* 
+            Using padding-bottom trick as universal fallback for aspect-ratio.
+            aspect-ratio CSS is not supported on older mobile browsers (iOS <15, Android WebView <93).
+            padding-bottom: 133.33% = 4/3 ratio (height = 133.33% of width)
+          */}
+          <div className="relative w-full" style={{ paddingBottom: '133.33%' }}>
+            <button
+              type="button"
+              onClick={onOpenFullView}
+              className="absolute inset-0 w-full h-full bg-black shadow-inner overflow-hidden cursor-pointer block text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-love-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a2a2a]"
+              aria-label={`View full size: ${item.title}`}
+            >
+              {item.type === 'video' ? (
+                <VideoPlayer url={item.url} thumbnail={item.thumbnail} />
+              ) : (
+                <img
+                  src={item.url}
+                  alt={item.title}
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                  loading="lazy"
+                />
+              )}
 
-            {/* Glass Reflection Effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-20 pointer-events-none z-10" />
-          </button>
+              {/* Glass Reflection Effect */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-20 pointer-events-none z-10" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -323,15 +329,14 @@ const MuseumFrame: React.FC<{
 // Grid video: thumbnail + play icon; click is handled by parent (opens lightbox)
 const VideoPlayer: React.FC<{ url: string; thumbnail?: string }> = ({ url, thumbnail }) => {
   return (
-    <div className="w-full h-full relative pointer-events-none" style={{ minHeight: '350px' }}>
+    <div className="absolute inset-0 w-full h-full pointer-events-none">
       <video
         src={url}
         poster={thumbnail}
-        className="w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover"
         playsInline
         muted
-        preload="none"
-        style={{ minHeight: '350px' }}
+        preload="metadata"
       />
       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/50 flex items-center justify-center shadow-lg">
